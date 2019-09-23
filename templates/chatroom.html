@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+{% block content %}
+<nav class="navbar">
+
+</nav>
+<div>
+  <div class="row">
+    <div class="col-2">
+      <nav class="sidebar">
+        <ul id="rooms">
+          {% for room in rooms %}
+            <li> <h1 class="room">{{room['room_name']|title}}</h1></li>
+          {% endfor %}
+        </ul>
+        <div class="add-room">
+          <form id="room-form" >
+            <input type="text" id="new-room">
+            <input type="submit" name="" value="Send">
+          </form>
+        </div>
+      </nav>
+    </div>
+    <div class="col">
+      <div class="chat-section">
+        <h3>Hello, Kazoza</h3>
+        <div class="messages-section">
+          <ul id="messages">
+
+          </ul>
+        </div>
+        <div class="send-message">
+          <form id="message-form" >
+            <input type="text" id="msg">
+            <input type="submit" name="" value="Send">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+
+{% endblock %}
