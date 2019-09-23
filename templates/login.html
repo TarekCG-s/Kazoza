@@ -1,21 +1,32 @@
 {% extends 'layout.html' %}
 {% block content %}
-<form class="" method="post" action="{{url_for('login')}}">
-  {{ form.hidden_tag() }}
-  <div class="">
-    {% if form.username.errors %}
-      {% for error in form.username.errors %}
-        {{error}}
-      {% endfor %}
-    {% endif %}
-    {{form.username.label}}
-    {{form.username}}
-  </div>
-  <div class="">
-    {{form.submit}}
-  </div>
+<link rel="icon" href="data:;base64,=">
+<div class="login-container">
+  <h1 style="color: #7b00c2" >Login</h1>
+  <br>
+  <form class="" method="post" action="{{url_for('login')}}">
+    {{ form.hidden_tag() }}
+
+           {% if form.username.errors %}
+                   {% for error in form.username.errors%}
+                     {{ form.username(class="form-control col is-invalid ") }}
+                     <div class="invalid-feedback">
+                       <div style="font-size:12px;"> {{ error }}</div>
+                     </div>
+                   {% endfor %}
+                 {% else %}
+                   {{ form.username(class="form-control col") }}
+             {% endif %}
+             <br>
+  {{form.submit(class="btn btn-info btn-block")}}
 
 
-</form>
+
+
+
+
+  </form>
+
+</div>
 
 {% endblock %}

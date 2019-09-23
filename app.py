@@ -18,4 +18,4 @@ rooms = [{'room_name':'movies', 'messages':[]}
 from routes import *
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    app.run()

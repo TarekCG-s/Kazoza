@@ -7,23 +7,35 @@ document.addEventListener('DOMContentLoaded', () => {
     room = 'science'
     join_room(room)
 
-    document.querySelector('#message-form').onsubmit = () => {
+    document.querySelector('#msg-form').onsubmit = () => {
     const msg = document.querySelector('#msg').value;
-    socketio.emit('send_message', {'msg':msg, 'room':room});
+    if(msg === ''){
+      return false;
+    }
+    else{
+      socketio.emit('send_message', {'msg':msg, 'room':room});
+      document.querySelector('#msg').value = ''
+    }
     return false;
     };
 
 
-    document.querySelector('#room-form').onsubmit = () => {
-    const room_name = document.querySelector('#new-room').value.toLowerCase();
-    socketio.emit('create_room', {'room':room_name});
+    document.querySelector('#chat-room').onsubmit = () => {
+    const room_name = document.querySelector('#new-room-name').value.toLowerCase();
+    if(room_name === ''){
+      return false;
+    }
+    else{
+      socketio.emit('create_room', {'room':room_name});
+      document.querySelector('#new-room-name').value = ''
+    }
     return false;
     };
 
 
-    document.querySelectorAll('.room').forEach(item => {
+    document.querySelectorAll('.list-item').forEach(item => {
       item.onclick = () => {
-        let new_room = item.innerHTML.toLowerCase();
+        let new_room = item.dataset.room.toLowerCase();
         if (new_room === room){
           alert("You're Already in this room")
         }
@@ -37,18 +49,54 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   socketio.on('send_message', data => {
-    const new_msg = document.createElement('li');
-    new_msg.innerHTML = `${data['username']} : ${data['msg']}` ;
-    document.querySelector('#messages').append(new_msg);
+    new_message(data['username'], data['msg'], '12 April');
+
   });
 
   socketio.on('create_room', data => {
-    const new_room = document.createElement('li');
-    const h1 = document.createElement('H1');
-    h1.innerHTML = data['room'];
-    h1.className = "room"
-    h1.onclick = () => {
-      let new_room = data['room'];
+    if(data['success']){
+      add_room(data['room']);
+    }
+    else {
+      alert("There is already a room with that name");
+    }
+
+  });
+
+
+  function leave_room(room){
+    socketio.emit('leave', {'room':room});
+    document.querySelector('#messages-list').innerHTML = '';
+  }
+
+  function join_room(room){
+    document.querySelector('#conversation-title').innerHTML = room;
+    const xhr = new XMLHttpRequest()
+    xhr.open('GET', '/room/' + room);
+    xhr.onload = () => {
+      const response = JSON.parse(xhr.response);
+      for (var i = 0; i < response.counter; i++) {
+        new_message(response[i]['username'], response[i]['msg'], '12 April');
+        // const li = document.createElement('li');
+        // li.innerHTML = `${response[i]['username']} : ${response[i]['msg']}`;
+        // document.querySelector('#messages-list').append(li);
+      }
+      socketio.emit('join', {'room':room});
+    }
+    xhr.send();
+  }
+
+  function add_room(room_name){
+    let ul = document.querySelector('#rooms-list');
+    let li = document.createElement('li');
+    let div = document.createElement('div');
+    div.className = 'list-item';
+    div.dataset.room = room_name.toLowerCase();
+    let h5 = document.createElement('h5');
+    h5.innerHTML = room_name;
+    div.append(h5);
+    div.onclick = () => {
+      let new_room = room_name;
       if (new_room === room){
         alert("You're Already in this room")
       }
@@ -58,38 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
         room = new_room;
       }
     }
-
-    new_room.append(h1);
-    document.querySelector('#rooms').append(new_room);
-  });
-
-
-  function leave_room(room){
-    socketio.emit('leave', {'room':room});
-    document.querySelector('#messages').innerHTML = '';
+    li.append(div);
+    ul.append(li);
   }
-
-  function join_room(room){
-
-    const xhr = new XMLHttpRequest()
-    xhr.open('GET', '/room/' + room);
-    xhr.onload = () => {
-      const response = JSON.parse(xhr.response);
-      for (var i = 0; i < response.counter; i++) {
-        const li = document.createElement('li');
-        li.innerHTML = `${response[i]['username']} : ${response[i]['msg']}`;
-        document.querySelector('#messages').append(li);
-      }
-      socketio.emit('join', {'room':room});
-    }
-    xhr.send();
-
-  }
-
-
-
-
-
-
 
 });

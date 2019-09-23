@@ -7,9 +7,9 @@ from helpers import login_required, update_room_messages
 @app.route('/')
 @login_required
 def chatroom():
-    return render_template('chatroom.html', title='Kazoza', rooms=rooms)
+    return render_template('chat.html', title='Kazoza', rooms=rooms)
 
-
+# login method stores the user in a session variable
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -23,6 +23,7 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    users.remove(session['username'])
     session.pop('username', None)
     return redirect(url_for('chatroom'))
 
@@ -40,7 +41,6 @@ def get_room_messages(room_name):
                 response[str(counter)] = message
                 counter += 1
             response['counter'] = counter
-            print(response)
             return response
     return {'counter':0}
 
@@ -49,7 +49,6 @@ def get_room_messages(room_name):
 def send_message(data):
     new_msg = {'msg':data['msg'], 'username':session['username']}
     update_room_messages(data['room'], new_msg)
-    print(rooms)
     emit('send_message', new_msg, broadcast=True, room=data['room'])
 
 
@@ -71,7 +70,10 @@ def leave(data):
 
 @socketio.on('create_room')
 def create_room(data):
+    for room in rooms:
+        if room['room_name'] == data['room']:
+            emit('create_room', {'success': False}, broadcast=True)
+            return
     new_room = {'room_name':data['room'], 'messages':[]}
     rooms.append(new_room)
-    print(new_room)
-    emit('create_room', {'room':data['room']}, broadcast=True)
+    emit('create_room', {'room':data['room'], 'success':True}, broadcast=True)

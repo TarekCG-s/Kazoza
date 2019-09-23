@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import session, redirect, url_for, flash
-from app import app, rooms
+from app import app, rooms, users
 
 def login_required(func):
     @wraps(func)
@@ -8,6 +8,9 @@ def login_required(func):
         if session.get('username') is None:
             flash(f'You need to log in first', 'warning')
             return redirect(url_for('login'))
+        else:
+            if session['username'] not in users:
+                users.append(session['username'])
         return func(*args, **kargs)
     return check_authentication
 
